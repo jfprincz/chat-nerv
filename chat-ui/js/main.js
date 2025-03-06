@@ -4,7 +4,7 @@
 // Configuration
 const config = {
     apiUrl: '/proxy/chat',
-    defaultModel: 'qwen:7b',
+    defaultModel: 'qwen2.5-coder:7b',
     maxHistoryItems: 10,
     maxTokens: 500,
     temperature: 0.7,
@@ -39,6 +39,10 @@ let conversationHistory = [];
 let conversationId = generateId();
 let isProcessing = false;
 let hasSystemPrompt = false;
+let tokenCount = 0;
+let responseStartTime = 0;
+let tokenRateInterval = null;
+let currentTokenSpeed = 0;
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
@@ -50,31 +54,29 @@ document.addEventListener('DOMContentLoaded', () => {
     topPValue.textContent = config.topP.toFixed(1);
     maxTokensValue.textContent = config.maxTokens;
     
-    // Load saved conversations
-    loadSavedConversations();
-    
-    // Load saved system prompt
-    loadSystemPrompt();
-    
     // Event listeners
-    userInput.addEventListener('keydown', handleKeyDown);
     sendButton.addEventListener('click', sendMessage);
+    userInput.addEventListener('keydown', handleKeyDown);
+    userInput.addEventListener('input', autoResizeTextarea);
     clearChatButton.addEventListener('click', clearConversation);
     saveConversationButton.addEventListener('click', saveConversation);
-    
-    // System prompt handlers
     systemPromptBtn.addEventListener('click', toggleSystemPromptPanel);
     closeSystemPrompt.addEventListener('click', toggleSystemPromptPanel);
     saveSystemPrompt.addEventListener('click', saveSystemPromptConfig);
-    
-    // Config sliders
     temperatureSlider.addEventListener('input', updateTemperature);
     topPSlider.addEventListener('input', updateTopP);
     maxTokensSlider.addEventListener('input', updateMaxTokens);
     
-    // Auto-resize textarea
-    userInput.addEventListener('input', autoResizeTextarea);
-    systemPrompt.addEventListener('input', autoResizeTextarea);
+    // Load any saved system prompt
+    loadSystemPrompt();
+    
+    // Load saved conversations
+    loadSavedConversations();
+    
+    // Set streaming toggle state from config
+    if (streamingToggle) {
+        streamingToggle.checked = config.streamingEnabled;
+    }
 });
 
 // Boot Sequence
@@ -160,7 +162,7 @@ function startBootSequence() {
         "MODULE: SECURITY.........OK",
         "",
         "ESTABLISHING CONNECTION TO LOCAL MODEL...",
-        "MODEL: QWEN-7B...........DETECTED",
+        "MODEL: QWEN2.5-CODER...........DETECTED",
         "LOADING MODEL PARAMETERS...",
         "",
         "PREPARING USER INTERFACE...",
@@ -294,7 +296,7 @@ function simulateTerminalStartup() {
         `<span class="content-timestamp">${currentTimestamp}</span>`, // Using span with timestamp class
         "CONNECTING TO LOCAL MODEL...",
         `<span class="content-timestamp">${currentTimestamp}</span>`, // Using span with timestamp class
-        "SYSTEM READY. MODEL QWEN-7B OPERATIONAL."
+        "SYSTEM READY. MODEL QWEN2.5-CODER OPERATIONAL."
     ];
         
     // Create system message container
@@ -421,6 +423,9 @@ async function sendToAPI(message) {
             // Create placeholder for bot response
             const responseId = addBotMessagePlaceholder();
             
+            // Start token tracking
+            startTokenTracking();
+            
             // First, make the POST request to initiate streaming
             fetch(config.apiUrl, {
                 method: 'POST',
@@ -448,6 +453,11 @@ async function sendToAPI(message) {
                             const chunk = data.message.content || '';
                             fullContent += chunk;
                             
+                            // Count tokens in the new chunk
+                            if (chunk.length > 0) {
+                                tokenCount += estimateTokenCount(chunk);
+                            }
+                            
                             // Update the placeholder with the current content
                             updateBotMessageContent(responseId, fullContent);
                         }
@@ -456,6 +466,9 @@ async function sendToAPI(message) {
                         if (data.done) {
                             eventSource.close();
                             finalizeBotMessage(responseId);
+                            
+                            // Stop token tracking
+                            stopTokenTracking();
                             
                             // Add to conversation history
                             conversationHistory.push({ role: 'assistant', content: fullContent });
@@ -474,12 +487,14 @@ async function sendToAPI(message) {
                 eventSource.onerror = (error) => {
                     console.error('SSE Error:', error);
                     eventSource.close();
+                    stopTokenTracking();
                     updateBotMessageContent(responseId, 'Error receiving streaming response. Check console for details.');
                     setProcessingState(false);
                 };
             })
             .catch(error => {
                 console.error('Error initiating streaming:', error);
+                stopTokenTracking();
                 finalizeBotMessage(responseId);
                 updateBotMessageContent(responseId, `Error: ${error.message}`);
                 setProcessingState(false);
@@ -501,6 +516,9 @@ async function sendToAPI(message) {
             const data = await response.json();
             const botResponse = data.message.content;
             
+            // Calculate tokens for non-streaming
+            const tokens = estimateTokenCount(botResponse);
+            
             // Add bot response
             addBotMessage(botResponse);
             
@@ -514,6 +532,7 @@ async function sendToAPI(message) {
         }
     } catch (error) {
         console.error('Error:', error);
+        stopTokenTracking();
         addSystemMessage(`ERROR: ${error.message}. Check console for details.`);
         setProcessingState(false);
     }
@@ -947,4 +966,68 @@ function updateSystemPromptBadge() {
         badge.textContent = 'SYS';
         systemPromptBtn.appendChild(badge);
     }
+}
+
+// Update token speed display
+function updateTokenSpeed() {
+    const tokenSpeedElement = document.getElementById('tokenSpeed');
+    if (tokenSpeedElement) {
+        tokenSpeedElement.textContent = currentTokenSpeed + " T/S";
+        // Add highlight effect for active generation
+        if (currentTokenSpeed > 0) {
+            tokenSpeedElement.classList.add('active-metric');
+        } else {
+            tokenSpeedElement.classList.remove('active-metric');
+        }
+    }
+}
+
+// Calculate tokens per second
+function calculateTokenSpeed() {
+    if (responseStartTime === 0 || tokenCount === 0) {
+        currentTokenSpeed = 0;
+    } else {
+        const currentTime = Date.now();
+        const elapsedSeconds = (currentTime - responseStartTime) / 1000;
+        if (elapsedSeconds > 0) {
+            currentTokenSpeed = Math.round(tokenCount / elapsedSeconds);
+        }
+    }
+    updateTokenSpeed();
+}
+
+// Start token speed tracking
+function startTokenTracking() {
+    // Reset counters
+    tokenCount = 0;
+    responseStartTime = Date.now();
+    
+    // Set up interval to update the display
+    if (tokenRateInterval) {
+        clearInterval(tokenRateInterval);
+    }
+    tokenRateInterval = setInterval(calculateTokenSpeed, 500);
+}
+
+// Stop token speed tracking
+function stopTokenTracking() {
+    if (tokenRateInterval) {
+        clearInterval(tokenRateInterval);
+        tokenRateInterval = null;
+    }
+    
+    // Calculate final rate
+    calculateTokenSpeed();
+    
+    // Reset after a delay
+    setTimeout(() => {
+        currentTokenSpeed = 0;
+        updateTokenSpeed();
+    }, 3000);
+}
+
+// Count tokens in a string (approximate method)
+function estimateTokenCount(text) {
+    // Simple approximation: ~4 characters per token
+    return Math.ceil(text.length / 4);
 } 

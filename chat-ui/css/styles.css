@@ -405,10 +405,41 @@ body::after {
     border: none;
 }
 
+/* Config Value Display */
 .config-value {
-    width: 40px;
+    font-size: 16px;
     text-align: right;
     color: #ff3e00;
+}
+
+/* Model Select Dropdown */
+.model-select {
+    background-color: rgba(0, 0, 0, 0.4);
+    color: #0cc;
+    border: 1px solid #333;
+    padding: 5px 10px;
+    font-family: 'Share Tech Mono', monospace;
+    cursor: pointer;
+    width: 140px;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: linear-gradient(45deg, transparent 50%, #0cc 50%), 
+                      linear-gradient(135deg, #0cc 50%, transparent 50%);
+    background-position: calc(100% - 15px) center, calc(100% - 10px) center;
+    background-size: 5px 5px, 5px 5px;
+    background-repeat: no-repeat;
+    outline: none;
+}
+
+.model-select:focus {
+    border-color: #0cc;
+    box-shadow: 0 0 3px rgba(0, 204, 204, 0.3);
+}
+
+.model-select option {
+    background-color: #001;
+    color: #0cc;
 }
 
 /* History Container */
@@ -449,18 +480,35 @@ body::after {
 }
 
 .data-value {
-    color: #fff;
-    position: relative;
+    color: #0cc;
+    text-shadow: 0 0 3px #0cc;
+}
+
+.active-metric {
+    color: #ff3e00 !important;
+    text-shadow: 0 0 5px #ff3e00 !important;
+    animation: metricPulse 1s infinite;
+}
+
+@keyframes metricPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.8; }
+}
+
+@keyframes statusBlip {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
 }
 
 .data-value::after {
     content: "";
-    position: absolute;
-    bottom: -2px;
-    left: 0;
-    width: 100%;
-    height: 1px;
-    background: rgba(255, 255, 255, 0.2);
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    background-color: #0cc;
+    margin-left: 6px;
+    box-shadow: 0 0 5px #0cc;
+    animation: statusBlip 3s infinite;
 }
 
 /* Action Buttons */
