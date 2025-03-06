@@ -6,7 +6,7 @@ const config = {
     apiUrl: '/proxy/chat',
     defaultModel: 'qwen2.5-coder:7b',
     maxHistoryItems: 10,
-    maxTokens: 500,
+    maxTokens: 1500,
     temperature: 0.7,
     topP: 0.9,
     streamingEnabled: true  // Always true, no toggle needed
@@ -77,6 +77,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (streamingToggle) {
         streamingToggle.checked = config.streamingEnabled;
     }
+
+    // Add initial update calls to set display values correctly
+    updateTemperature();
+    updateTopP();
+    updateMaxTokens();
 });
 
 // Boot Sequence
@@ -293,9 +298,7 @@ function simulateTerminalStartup() {
     
     const startupLines = [
         "INITIALIZING MAGI SYSTEM...",
-        `<span class="content-timestamp">${currentTimestamp}</span>`, // Using span with timestamp class
         "CONNECTING TO LOCAL MODEL...",
-        `<span class="content-timestamp">${currentTimestamp}</span>`, // Using span with timestamp class
         "SYSTEM READY. MODEL QWEN2.5-CODER OPERATIONAL."
     ];
         
@@ -309,6 +312,9 @@ function simulateTerminalStartup() {
     
     const contentElement = document.createElement("div");
     contentElement.className = "message-content";
+    contentElement.style.textAlign = "center"; // Ensure text is centered consistently
+    contentElement.style.display = "block"; // Use block instead of inline-block
+    contentElement.style.width = "100%"; // Full width
     contentElement.innerHTML = "";
     
     messageElement.appendChild(timestampElement);
@@ -317,50 +323,60 @@ function simulateTerminalStartup() {
     messagesContainer.appendChild(messageElement);
     
     // Typing effect
-    let currentText = "";
     let currentLine = 0;
-    let charIndex = 0;
-    const typingSpeed = 20; // ms per character
     
-    function typeChar() {
+    function displayNextLine() {
         if (currentLine < startupLines.length) {
-            const currentLineContent = startupLines[currentLine];
+            const line = startupLines[currentLine];
             
-            // If current line is HTML (timestamp), add it all at once
-            if (currentLineContent.startsWith('<span class="content-timestamp">')) {
-                currentText += currentLineContent + "<br>";
-                currentLine++;
-                contentElement.innerHTML = currentText;
-                messagesContainer.scrollTop = messagesContainer.scrollHeight;
-                setTimeout(typeChar, typingSpeed * 3);
-                return;
-            }
+            // Create a wrapper for the text and cursor to maintain position
+            const textWrapper = document.createElement('div');
+            textWrapper.style.display = "inline-block";
+            textWrapper.style.position = "relative"; // Position relative for cursor
             
-            // If we've finished typing the current line
-            if (charIndex >= currentLineContent.length) {
-                currentText += "<br>";
-                currentLine++;
-                charIndex = 0;
-                contentElement.innerHTML = currentText;
-                messagesContainer.scrollTop = messagesContainer.scrollHeight;
-                
-                if (currentLine < startupLines.length) {
-                    setTimeout(typeChar, typingSpeed * 3); // Pause between lines
+            // Add a blinking cursor
+            const textCursor = document.createElement('span');
+            textCursor.className = 'cursor';
+            textCursor.innerHTML = '&#9608;'; // Solid block character
+            
+            // Clear content and add wrapper
+            contentElement.innerHTML = '';
+            contentElement.appendChild(textWrapper);
+            textWrapper.appendChild(textCursor);
+            
+            let charIndex = 0;
+            const typingInterval = setInterval(() => {
+                if (charIndex < line.length) {
+                    // Insert character before the cursor
+                    textCursor.insertAdjacentText('beforebegin', line[charIndex]);
+                    charIndex++;
+                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                } else {
+                    // Keep text but remove cursor to avoid layout shift
+                    // Instead of removing, just hide it with zero opacity
+                    textCursor.style.opacity = "0";
+                    clearInterval(typingInterval);
+                    
+                    // Move to next line after delay, unless it's the last line
+                    currentLine++;
+                    if (currentLine < startupLines.length) {
+                        setTimeout(displayNextLine, 1000); // 1 second pause between messages
+                    } else {
+                        // This is the last line - completely remove all cursors after delay
+                        setTimeout(() => {
+                            // Remove all cursors from the document once boot sequence is complete
+                            document.querySelectorAll('.cursor').forEach(cursor => {
+                                cursor.remove();
+                            });
+                        }, 1000);
+                    }
                 }
-                return;
-            }
-            
-            // Type the next character
-            currentText += currentLineContent[charIndex];
-            contentElement.innerHTML = currentText;
-            charIndex++;
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
-            setTimeout(typeChar, typingSpeed);
+            }, 20); // 20ms per character
         }
     }
     
-    // Start typing effect
-    typeChar();
+    // Start the sequence
+    displayNextLine();
 }
 
 // Handle message sending
@@ -409,7 +425,7 @@ async function sendToAPI(message) {
             options: {
                 temperature: parseFloat(temperatureSlider.value),
                 top_p: parseFloat(topPSlider.value),
-                max_tokens: parseInt(maxTokensSlider.value)
+                num_predict: parseInt(maxTokensSlider.value) || 500
             },
             stream: config.streamingEnabled
         };
@@ -683,18 +699,22 @@ function removeThinkingIndicator() {
 function updateTemperature() {
     config.temperature = parseFloat(temperatureSlider.value);
     temperatureValue.textContent = config.temperature.toFixed(1);
+    console.log("Temperature updated to:", config.temperature);
 }
 
 // Update Top-P Configuration
 function updateTopP() {
     config.topP = parseFloat(topPSlider.value);
     topPValue.textContent = config.topP.toFixed(1);
+    console.log("Top-P updated to:", config.topP);
 }
 
 // Update Max Tokens Configuration
 function updateMaxTokens() {
-    config.maxTokens = parseInt(maxTokensSlider.value);
-    maxTokensValue.textContent = config.maxTokens;
+    const parsedValue = parseInt(maxTokensSlider.value);
+    config.maxTokens = isNaN(parsedValue) ? 2000 : parsedValue;
+    maxTokensValue.textContent = config.maxTokens.toString();
+    console.log("Max tokens updated to:", config.maxTokens);
 }
 
 // Clear conversation
