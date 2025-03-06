@@ -1,0 +1,915 @@
+/* Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Share Tech Mono', monospace;
+    background-color: #000;
+    color: #0ff;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+/* CRT and Screen Effects */
+body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
+    background-size: 100% 4px;
+    z-index: 1000;
+    pointer-events: none;
+    opacity: 0.15;
+    animation: scanline 10s linear infinite;
+}
+
+/* Subtle screen flicker */
+body::after {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 204, 204, 0.02);
+    opacity: 0;
+    z-index: 1001;
+    pointer-events: none;
+    animation: flicker 5s infinite;
+}
+
+@keyframes scanline {
+    0% {
+        background-position: 0 0;
+    }
+    100% {
+        background-position: 0 100%;
+    }
+}
+
+@keyframes flicker {
+    0% { opacity: 0; }
+    5% { opacity: 0.1; }
+    10% { opacity: 0; }
+    15% { opacity: 0; }
+    20% { opacity: 0; }
+    25% { opacity: 0.1; }
+    30% { opacity: 0; }
+    35% { opacity: 0; }
+    40% { opacity: 0.05; }
+    45% { opacity: 0; }
+    50% { opacity: 0; }
+    55% { opacity: 0.15; }
+    60% { opacity: 0; }
+    65% { opacity: 0; }
+    70% { opacity: 0; }
+    75% { opacity: 0; }
+    80% { opacity: 0.2; }
+    85% { opacity: 0; }
+    90% { opacity: 0; }
+    95% { opacity: 0.1; }
+    100% { opacity: 0; }
+}
+
+.terminal-container {
+    width: 100%;
+    max-width: 1200px;
+    height: 100vh;
+    max-height: 800px;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #444;
+    background-color: #0a0a0a;
+    position: relative;
+    box-shadow: 0 0 30px rgba(0, 200, 200, 0.15);
+    opacity: 1;
+    transition: opacity 1s ease-in-out;
+}
+
+@keyframes power-on {
+    0% { 
+        opacity: 0;
+        filter: brightness(0.5);
+    }
+    100% { 
+        opacity: 1;
+        filter: brightness(1);
+    }
+}
+
+/* Header Bar Styles */
+.header-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background-color: #000;
+    border-bottom: 1px solid #333;
+    position: relative;
+    z-index: 2;
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.nerv-logo {
+    display: flex;
+    align-items: center;
+}
+
+.logo-triangle {
+    width: 0;
+    height: 0;
+    border-left: 15px solid transparent;
+    border-right: 15px solid transparent;
+    border-bottom: 25px solid #ff3e00;
+    margin-right: 10px;
+    filter: drop-shadow(0 0 3px rgba(255, 62, 0, 0.7));
+}
+
+.logo-text {
+    color: #ff3e00;
+    font-size: 24px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    text-shadow: 0 0 5px rgba(255, 62, 0, 0.7);
+}
+
+.system-status {
+    color: #0cc;
+    font-size: 18px;
+    text-shadow: 0 0 4px #0cc;
+}
+
+.status-normal {
+    color: #0cc;
+    animation: statusPulse 4s infinite;
+}
+
+.model-info {
+    color: #fff;
+    font-size: 18px;
+    text-shadow: 0 0 3px #fff;
+}
+
+.model-name {
+    color: #ff3e00;
+    text-shadow: 0 0 3px #ff3e00;
+}
+
+@keyframes statusPulse {
+    0%, 100% { text-shadow: 0 0 4px #0cc; }
+    50% { text-shadow: 0 0 10px #0cc; }
+}
+
+/* Main Content Layout */
+.main-content {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+.chat-container {
+    flex: 3;
+    display: flex;
+    flex-direction: column;
+    background-color: rgba(0, 15, 30, 0.7);
+    position: relative;
+    border-right: 1px solid #333;
+    overflow: hidden;
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+}
+
+/* Replace the grid background with a more authentic NERV-style background */
+.chat-container::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        radial-gradient(circle at center, rgba(0, 180, 180, 0.03) 0%, rgba(0, 0, 0, 0) 70%),
+        linear-gradient(to bottom, rgba(0, 0, 0, 0.9) 0%, rgba(0, 15, 30, 0.7) 100%);
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* Add subtle horizontal scan lines like a CRT display */
+.chat-container::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to bottom, rgba(0, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 6px 6px;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.messages-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 15px;
+    scrollbar-width: none; /* Hide scrollbar for Firefox */
+    -ms-overflow-style: none; /* Hide scrollbar for IE and Edge */
+    position: relative;
+    z-index: 4;
+}
+
+.messages-container::-webkit-scrollbar {
+    display: none; /* Hide scrollbar for Chrome, Safari, and Opera */
+}
+
+/* Message Styles */
+.message {
+    margin-bottom: 20px;
+    position: relative;
+    animation: messageAppear 0.3s ease-out forwards;
+    max-width: 90%;
+}
+
+.user-message {
+    margin-left: auto;
+    background-color: rgba(255, 62, 0, 0.1);
+    border-left: 3px solid #ff3e00;
+    padding: 10px 15px;
+}
+
+.bot-message {
+    margin-right: auto;
+    background-color: rgba(0, 204, 204, 0.1);
+    border-left: 3px solid #0cc;
+    padding: 10px 15px;
+}
+
+.system-message {
+    margin: 20px auto;
+    text-align: center;
+    background-color: rgba(0, 30, 40, 0.2);
+    padding: 10px;
+    border-top: 1px solid rgba(0, 102, 102, 0.3);
+    border-bottom: 1px solid rgba(0, 102, 102, 0.3);
+    color: #0cc;
+    text-shadow: 0 0 5px rgba(0, 204, 204, 0.3);
+}
+
+.message-timestamp {
+    font-size: 12px;
+    opacity: 0.7;
+    margin-bottom: 3px;
+}
+
+.message-content {
+    line-height: 1.5;
+    animation: messageAppear 0.3s ease-in-out;
+}
+
+.content-timestamp {
+    font-size: 12px;
+    opacity: 0.7;
+    display: inline-block;
+}
+
+@keyframes messageAppear {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* Side Panel Styles */
+.side-panel {
+    flex: 1;
+    padding: 15px;
+    background-color: rgba(0, 10, 20, 0.8);
+    overflow-y: auto;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+}
+
+/* Replace checkered pattern with subtle gradient */
+.side-panel::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to bottom, rgba(0, 30, 40, 0.4) 0%, rgba(0, 10, 20, 0.2) 100%);
+    z-index: 1;
+    pointer-events: none;
+}
+
+/* Add horizontal scan lines to side panel */
+.side-panel::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to bottom, rgba(0, 255, 255, 0.02) 1px, transparent 1px);
+    background-size: 4px 4px;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.data-section {
+    margin-bottom: 20px;
+    position: relative;
+    z-index: 3;
+    background-color: rgba(0, 30, 30, 0.15);
+    border: 1px solid #333;
+    padding: 15px;
+    box-shadow: 0 0 10px rgba(0, 180, 180, 0.05) inset;
+}
+
+.section-header {
+    color: #0cc;
+    font-size: 16px;
+    margin-bottom: 10px;
+    text-shadow: 0 0 3px #0cc;
+    letter-spacing: 1px;
+}
+
+.section-divider {
+    height: 1px;
+    background: linear-gradient(to right, transparent, #0cc, transparent);
+    margin: 10px 0 15px 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.section-divider::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(to right, transparent, #fff, transparent);
+    animation: dividerScan 3s ease-in-out infinite;
+}
+
+@keyframes dividerScan {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}
+
+/* Configuration Controls */
+.config-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    font-size: 14px;
+}
+
+.config-row label {
+    width: 120px;
+    color: #0cc;
+}
+
+.config-row input[type="range"] {
+    flex: 1;
+    height: 5px;
+    -webkit-appearance: none;
+    background: #003;
+    outline: none;
+    margin: 0 10px;
+}
+
+.config-row input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 15px;
+    height: 15px;
+    background: #0cc;
+    cursor: pointer;
+    border: none;
+}
+
+.config-value {
+    width: 40px;
+    text-align: right;
+    color: #ff3e00;
+}
+
+/* History Container */
+.history-container {
+    max-height: 200px;
+    overflow-y: auto;
+    font-size: 12px;
+    color: #ccc;
+    scrollbar-width: none; /* Hide scrollbar for Firefox */
+    -ms-overflow-style: none; /* Hide scrollbar for IE and Edge */
+}
+
+.history-container::-webkit-scrollbar {
+    display: none; /* Hide scrollbar for Chrome, Safari, and Opera */
+}
+
+.history-item {
+    padding: 5px;
+    border-bottom: 1px solid #222;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.history-item:hover {
+    background-color: rgba(0, 204, 204, 0.1);
+}
+
+/* MAGI Data Grid */
+.data-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    font-size: 14px;
+}
+
+.data-label {
+    color: #0cc;
+}
+
+.data-value {
+    color: #fff;
+    position: relative;
+}
+
+.data-value::after {
+    content: "";
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* Action Buttons */
+.action-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: auto;
+}
+
+.nerv-button {
+    background-color: #001;
+    color: #0cc;
+    border: 1px solid #0cc;
+    padding: 8px 15px;
+    font-family: 'Share Tech Mono', monospace;
+    cursor: pointer;
+    transition: all 0.2s;
+    flex: 1;
+    text-align: center;
+}
+
+.nerv-button:hover {
+    background-color: rgba(0, 204, 204, 0.2);
+    box-shadow: 0 0 10px rgba(0, 204, 204, 0.5);
+}
+
+/* Footer Input Area */
+.footer-input {
+    background-color: #000;
+    border-top: 1px solid #333;
+    padding: 15px;
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.input-container {
+    display: flex;
+    align-items: center;
+    background-color: rgba(0, 20, 30, 0.8);
+    border: 1px solid #333;
+    position: relative;
+}
+
+.prompt-prefix {
+    padding: 10px;
+    color: #ff3e00;
+    font-weight: bold;
+}
+
+.user-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 14px;
+    padding: 10px;
+    resize: none;
+    max-height: 100px;
+    outline: none;
+}
+
+.user-input::placeholder {
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.send-button {
+    background-color: #001;
+    color: #0cc;
+    border: none;
+    border-left: 1px solid #333;
+    padding: 10px 20px;
+    font-family: 'Share Tech Mono', monospace;
+    cursor: pointer;
+    transition: all 0.2s;
+    height: 100%;
+}
+
+.send-button:hover {
+    background-color: rgba(0, 204, 204, 0.2);
+}
+
+/* Color Distortion Effect */
+.color-distortion {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(ellipse at center, 
+                               rgba(0, 0, 255, 0.03) 0%, 
+                               rgba(0, 255, 255, 0.03) 40%, 
+                               rgba(255, 0, 0, 0.03) 80%, 
+                               rgba(0, 0, 0, 0) 100%);
+    pointer-events: none;
+    z-index: 999;
+    mix-blend-mode: screen;
+    animation: distortionPulse 10s infinite alternate;
+}
+
+@keyframes distortionPulse {
+    0% {
+        opacity: 0.4;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.6;
+        transform: scale(1.05);
+    }
+    100% {
+        opacity: 0.4;
+        transform: scale(1);
+    }
+}
+
+/* Loading Animation */
+.loading {
+    display: inline-block;
+    position: relative;
+    width: 20px;
+    height: 20px;
+    vertical-align: middle;
+    margin-left: 10px;
+}
+
+.loading::after {
+    content: " ";
+    display: block;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid #0cc;
+    border-color: #0cc transparent #0cc transparent;
+    animation: loading-animation 1.2s linear infinite;
+}
+
+@keyframes loading-animation {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Code Block Styling */
+.code-block {
+    background-color: rgba(0, 0, 0, 0.3);
+    padding: 10px;
+    margin: 10px 0;
+    border-left: 3px solid #ff3e00;
+    font-family: 'Share Tech Mono', monospace;
+    white-space: pre-wrap;
+    overflow-x: auto;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .main-content {
+        flex-direction: column;
+    }
+    
+    .chat-container {
+        flex: 2;
+        border-right: none;
+        border-bottom: 1px solid #333;
+    }
+    
+    .side-panel {
+        height: 300px;
+    }
+}
+
+/* Typing indicator for streaming */
+.typing-message {
+    position: relative;
+}
+
+.typing-indicator {
+    display: inline-block;
+    animation: blink 1s infinite;
+    color: #0ff;
+    margin-left: 3px;
+    font-weight: bold;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
+
+/* System Prompt Panel */
+.system-prompt-panel {
+    background-color: rgba(0, 15, 30, 0.7);
+    border: 1px solid #333;
+    padding: 15px;
+    margin: 15px;
+    position: absolute;
+    top: 60px;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    display: none; /* Hidden by default */
+    position: relative;
+    overflow: hidden;
+}
+
+/* Add NERV-style background gradient */
+.system-prompt-panel::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        radial-gradient(circle at center, rgba(0, 180, 180, 0.03) 0%, rgba(0, 0, 0, 0) 70%),
+        linear-gradient(to bottom, rgba(0, 0, 0, 0.9) 0%, rgba(0, 15, 30, 0.7) 100%);
+    pointer-events: none;
+    z-index: -1;
+}
+
+/* Add CRT scanlines */
+.system-prompt-panel::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to bottom, rgba(0, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 6px 6px;
+    pointer-events: none;
+    z-index: -1;
+}
+
+.system-prompt-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #333;
+    padding-bottom: 8px;
+}
+
+.system-prompt-title {
+    color: #0cc;
+    font-size: 16px;
+    letter-spacing: 1px;
+}
+
+.system-prompt-controls {
+    display: flex;
+    gap: 10px;
+}
+
+.system-prompt-toggle {
+    background: none;
+    border: none;
+    color: #0cc;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+}
+
+.system-prompt-toggle:hover {
+    color: #0ff;
+}
+
+.system-prompt-container {
+    margin-top: 10px;
+}
+
+.system-prompt-input {
+    width: 100%;
+    background-color: rgba(0, 0, 0, 0.4);
+    color: #0cc;
+    border: 1px solid #333;
+    padding: 10px;
+    font-family: 'Share Tech Mono', monospace;
+    resize: vertical;
+    min-height: 80px;
+    max-height: 200px;
+}
+
+.system-prompt-input:focus {
+    outline: none;
+    border-color: #0cc;
+}
+
+.system-prompt-save {
+    margin-top: 10px;
+    background-color: rgba(0, 0, 0, 0.4);
+    color: #0cc;
+    border: 1px solid #333;
+    padding: 5px 10px;
+    font-family: 'Share Tech Mono', monospace;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.system-prompt-save:hover {
+    background-color: rgba(0, 51, 51, 0.4);
+    border-color: #0cc;
+}
+
+/* System Badge */
+.system-badge {
+    display: inline-block;
+    background-color: rgba(255, 62, 0, 0.2);
+    color: #ff3e00;
+    padding: 2px 6px;
+    font-size: 11px;
+    border-radius: 2px;
+    margin-left: 5px;
+    position: relative;
+    top: -1px;
+}
+
+/* This removes the toggle switch styles */
+
+/* Boot Sequence Overlay */
+.boot-sequence {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #000;
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    padding-top: 10vh;
+    color: #ff3e00;
+    font-family: 'Share Tech Mono', monospace;
+}
+
+.boot-logo {
+    margin-bottom: 30px;
+    display: flex;
+    align-items: center;
+}
+
+.boot-logo .logo-triangle {
+    border-left: 20px solid transparent;
+    border-right: 20px solid transparent;
+    border-bottom: 35px solid #ff3e00;
+    filter: drop-shadow(0 0 8px rgba(255, 62, 0, 0.9));
+    display: none; /* Initially hidden */
+    cursor: default; /* Hide the fact it's clickable */
+}
+
+.boot-logo .logo-text {
+    font-size: 32px;
+    text-shadow: 0 0 10px rgba(255, 62, 0, 0.9);
+    margin-left: 10px;
+    display: none; /* Initially hidden */
+}
+
+.boot-text {
+    font-family: 'Share Tech Mono', monospace;
+    width: 80%;
+    max-width: 600px;
+    height: 250px;
+    overflow: hidden;
+    text-align: left;
+    color: #0cc;
+    margin-top: 20px;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.boot-text .cursor {
+    animation: cursor-blink 1s infinite;
+}
+
+@keyframes cursor-blink {
+    0%, 49% { opacity: 1; }
+    50%, 100% { opacity: 0; }
+}
+
+.boot-progress-container {
+    width: 80%;
+    max-width: 600px;
+    margin-top: 30px;
+    text-align: left;
+}
+
+.boot-progress-label {
+    color: #0cc;
+    font-size: 14px;
+    margin-bottom: 5px;
+}
+
+.boot-progress {
+    width: 100%;
+    height: 20px;
+    background-color: #111;
+    border: 1px solid #333;
+    position: relative;
+    overflow: hidden; /* Add overflow hidden to contain the grid pattern */
+}
+
+/* Add "scanline" effect to progress bar */
+.boot-progress::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+        to bottom,
+        rgba(0, 0, 0, 0.3) 0%,
+        rgba(0, 0, 0, 0) 50%,
+        rgba(0, 0, 0, 0.3) 100%
+    );
+    background-size: 100% 4px;
+    z-index: 2;
+    pointer-events: none;
+}
+
+.boot-progress-bar {
+    height: 100%;
+    background-color: #0cc;
+    width: 0%;
+    transition: width 0.1s linear;
+    position: relative;
+}
+
+/* Parts of the UI that will load in sequence */
+.header-bar, 
+.side-panel, 
+.chat-container, 
+.footer-input {
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+}
+
+/* Fix original container to be initially hidden */
+.terminal-container {
+    opacity: 1;
+} 

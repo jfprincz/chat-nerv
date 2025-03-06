@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NERV - Model Interface</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="color-distortion"></div>
+    
+    <!-- Boot Sequence Overlay -->
+    <div class="boot-sequence" id="bootSequence">
+        <div class="boot-logo">
+            <div class="logo-triangle" id="bootLogoTriangle"></div>
+            <div class="logo-text" id="bootLogoText">NERV</div>
+        </div>
+        <div class="boot-text" id="bootText"></div>
+        <div class="boot-progress-container">
+            <div class="boot-progress-label">SYSTEM INITIALIZATION: <span id="progressPercentage">0%</span></div>
+            <div class="boot-progress">
+                <div class="boot-progress-bar" id="bootProgressBar"></div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="terminal-container">
+        <!-- Header Bar -->
+        <div class="header-bar">
+            <div class="nerv-logo">
+                <div class="logo-triangle"></div>
+                <div class="logo-text">NERV</div>
+            </div>
+            <div class="system-status">SYSTEM STATUS: <span class="status-normal">CONNECTED</span></div>
+            <div class="model-info">MODEL: <span class="model-name">QWEN-7B</span></div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Chat Interface -->
+            <div class="chat-container">
+                <!-- System Prompt Panel -->
+                <div class="system-prompt-panel" id="systemPromptPanel">
+                    <div class="system-prompt-header">
+                        <div class="system-prompt-title">SYSTEM PROMPT CONFIGURATION</div>
+                        <div class="system-prompt-controls">
+                            <button class="system-prompt-toggle" id="closeSystemPrompt">×</button>
+                        </div>
+                    </div>
+                    <div class="system-prompt-container">
+                        <textarea id="systemPrompt" class="system-prompt-input" placeholder="Enter system instructions for the model..."></textarea>
+                        <button id="saveSystemPrompt" class="system-prompt-save">SAVE CONFIGURATION</button>
+                    </div>
+                </div>
+                
+                <div class="messages-container" id="messagesContainer">
+                    <!-- Messages will be added here by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Side Panel -->
+            <div class="side-panel">
+                <!-- Model Configuration -->
+                <div class="data-section">
+                    <h2 class="section-header">CONFIGURATION</h2>
+                    <div class="section-divider"></div>
+                    
+                    <div class="config-row">
+                        <label for="temperature">TEMPERATURE:</label>
+                        <input type="range" id="temperature" min="0" max="1" step="0.1" value="0.7">
+                        <span class="config-value" id="temperatureValue">0.7</span>
+                    </div>
+                    
+                    <div class="config-row">
+                        <label for="topP">TOP-P:</label>
+                        <input type="range" id="topP" min="0" max="1" step="0.1" value="0.9">
+                        <span class="config-value" id="topPValue">0.9</span>
+                    </div>
+                    
+                    <div class="config-row">
+                        <label for="maxTokens">MAX TOKENS:</label>
+                        <input type="range" id="maxTokens" min="10" max="2000" step="10" value="500">
+                        <span class="config-value" id="maxTokensValue">500</span>
+                    </div>
+                </div>
+                
+                <!-- Chat History -->
+                <div class="data-section">
+                    <h2 class="section-header">CONVERSATION LOG</h2>
+                    <div class="section-divider"></div>
+                    <div class="history-container" id="historyContainer">
+                        <!-- Chat history will be added here -->
+                    </div>
+                </div>
+                
+                <!-- MAGI System Status -->
+                <div class="data-section">
+                    <h2 class="section-header">MAGI STATUS</h2>
+                    <div class="section-divider"></div>
+                    
+                    <div class="data-grid">
+                        <div class="data-label">PROCESSING:</div>
+                        <div class="data-value" id="processingStatus">IDLE</div>
+                        
+                        <div class="data-label">CONNECTION:</div>
+                        <div class="data-value">ACTIVE</div>
+                        
+                        <div class="data-label">MODEL:</div>
+                        <div class="data-value">QWEN-7B</div>
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="action-buttons">
+                    <button id="clearChat" class="nerv-button">CLEAR CONVERSATION</button>
+                    <button id="saveConversation" class="nerv-button">SAVE LOG</button>
+                    <button id="systemPromptBtn" class="nerv-button">SYSTEM PROMPT</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer - Input Area -->
+        <div class="footer-input">
+            <div class="input-container">
+                <span class="prompt-prefix">NERV></span>
+                <textarea id="userInput" class="user-input" placeholder="Enter your query..." rows="1"></textarea>
+                <button id="sendButton" class="send-button">SEND</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/main.js"></script>
+</body>
+</html> 
